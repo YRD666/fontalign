@@ -1,0 +1,31 @@
+Package: fontalign
+Type: Package
+Title: Backend-Agnostic Font Size Alignment for ggplot2 Outputs
+Version: 0.1.0
+Authors@R: person("fontalign contributors", email = "noreply@example.com", role = c("aut", "cre"))
+Description: Align rendered text size to a target DPI for plots produced by
+    ggplot2, base graphics, or lattice, without modifying the original plot
+    object or theme. Wraps ggsave() and routes complex-script text
+    (Arabic, Persian, Devanagari, Thai) to a backend that supports HarfBuzz
+    shaping (ragg or svglite). Targets Linux servers; on other platforms
+    falls back gracefully.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.0.0)
+Imports:
+    cli,
+    grDevices,
+    ggplot2,
+    rlang,
+    tools,
+    utils
+Suggests:
+    testthat (>= 3.0.0),
+    vdiffr,
+    knitr,
+    rmarkdown,
+    ragg,
+    svglite
+RoxygenNote: 7.3.1
+BugReports: https://github.com/<your-org>/fontalign/issues
+URL: https://github.com/<your-org>/fontalign

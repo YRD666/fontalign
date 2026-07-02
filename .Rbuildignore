@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^LICENSE\.note$
+^\.github$
+^docs$
+^pkgdown$
+^\.vscode$
+^inst/devtools_alt$

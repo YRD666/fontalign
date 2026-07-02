@@ -1,0 +1,36 @@
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+name: R-CMD-check
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+    container:
+      image: rocker/tidyverse:4.4.1
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            libcairo2-dev libpango1.0-dev libfontconfig1-dev \
+            libharfbuzz-dev libfribidi-dev librsvg2-dev \
+            fonts-noto fonts-noto-cjk fonts-noto-color-emoji
+
+      - name: Install R dependencies
+        run: |
+          R -e 'install.packages(c("remotes", "testthat", "vdiffr", "ragg", "svglite", "rsvg"))'
+
+      - name: Check
+        env:
+          _R_CHECK_FORCE_SUGGESTS_: false
+        run: |
+          R -e 'devtools::check(document = FALSE, args = c("--no-manual", "--as-cran"))'

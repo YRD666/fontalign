@@ -1,0 +1,81 @@
+---
+title: "Why fontalign"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Why fontalign}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = requireNamespace("ragg", quietly = TRUE) &&
+         requireNamespace("svglite", quietly = TRUE)
+)
+```
+
+`fontalign` exists because two problems show up together when rendering
+plots on a Linux server for a global audience:
+
+1. **Font size inconsistency across output formats.** The same
+   `ggsave("plot.pdf", dpi = 300)` and `ggsave("plot.png", dpi = 300)`
+   produce visibly different text heights when a font post-processor
+   like **showtext** is enabled. This is because `showtext` calibrates
+   its own internal DPI independently of the actual device DPI.
+
+2. **Complex-script shaping.** Arabic, Persian, Devanagari, Thai, and
+   emoji require HarfBuzz to render correctly. Cairo alone on a stock
+   Linux image lacks the necessary Pango/Cairo bindings.
+
+## What fontalign does and does not do
+
+`fontalign`:
+
+* Picks a backend (`cairo_pdf`, `cairo_png`, `ragg::agg_png`,
+  `svglite::svglite`) appropriate for the scripts detected in the plot.
+* Aligns text size to the target DPI across all chosen backends.
+* Provides `fontalign_check_system()` so a system administrator can
+  verify the server's font and graphics stack before deploying.
+
+`fontalign` does **not**:
+
+* Modify your ggplot object or theme.
+* Globally `trace()` base graphics functions.
+* Reimplement HarfBuzz shaping. That is delegated to `ragg`/`svglite`,
+  which already do it correctly.
+
+## Workflow
+
+```{r, eval = FALSE}
+library(fontalign)
+fontalign_check_system()
+```
+
+```{r, eval = FALSE}
+library(ggplot2)
+p <- ggplot(mtcars, aes(mpg, wt)) +
+     geom_point() +
+     labs(title = "fuel consumption")
+
+fontalign_save(p, "out.pdf", width = 6, height = 4, dpi = 300)
+```
+
+If the plot's labels contain Arabic or Thai, the same call routes to
+`ragg::agg_png` for PNG output and `svglite::svglite` for SVG, so
+shaping is handled by HarfBuzz via those backends.
+
+## Server deployment
+
+The recommended Linux baseline is:
+
+```bash
+apt-get install -y \
+  libcairo2-dev libpango1.0-dev libfontconfig1-dev \
+  libharfbuzz-dev libfribidi-dev librsvg2-dev \
+  fonts-noto fonts-noto-cjk fonts-noto-color-emoji
+```
+
+After deploy, run `fontalign::fontalign_check_system()` from inside the
+deployed environment to confirm.

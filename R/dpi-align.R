@@ -102,7 +102,7 @@ render_snapshot <- function(plot, width = 6, height = 4, dpi = 96) {
 #' Internal: a tiny test plot used by examples and tests
 #' @noRd
 example_plot <- function() {
-  ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
+  ggplot2::ggplot(datasets::mtcars, ggplot2::aes(.data$mpg, .data$wt)) +
     ggplot2::geom_point() +
     ggplot2::labs(title = "Example plot",
                   x = "Miles per gallon",

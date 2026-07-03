@@ -17,8 +17,10 @@ to PDF, PNG, and SVG on a Linux server:
    reports whether the system has the fonts and libraries required.
 
 `fontalign` does **not** modify your ggplot object, theme, or graphics
-state. It wraps `ggsave()` and routes rendering to an appropriate backend
-based on the detected writing systems in your labels.
+state. For ggplot objects it wraps `ggsave()` and routes rendering to an
+appropriate backend based on the detected writing systems in your labels.
+For base graphics, grid, lattice, and packages that draw directly to the
+active device, it provides device-level wrappers around bitmap output.
 
 ## Quick start
 
@@ -36,12 +38,51 @@ fontalign_save(p, "plot.png", width = 6, height = 4, dpi = 300,
                use = "ragg")
 ```
 
+For code that currently uses `png(); ...; dev.off()`, use the device wrapper:
+
+```r
+fontalign_png("base-plot.png", width = 1600, height = 1000, res = 200)
+plot(1:10, main = "中文 عربي English")
+dev.off()
+
+# Or let fontalign close the device even if drawing errors.
+with_fontalign_device(
+  "base-plot.png",
+  {
+    plot(1:10, main = "中文 عربي English")
+    text(5, 8, "多语言 label")
+  },
+  width = 1600,
+  height = 1000,
+  res = 200
+)
+```
+
+The same device API covers JPEG and TIFF:
+
+```r
+fontalign_jpeg("base-plot.jpg", width = 1600, height = 1000, res = 200)
+plot(1:10, main = "中文 عربي English")
+dev.off()
+
+with_fontalign_device(
+  "base-plot.tiff",
+  {
+    plot(1:10, main = "中文 عربي English")
+  },
+  device = "tiff",
+  width = 1600,
+  height = 1000,
+  res = 200
+)
+```
+
 ## Design philosophy
 
 * Do not modify ggplot2 internals or theme defaults.
 * Do not globally `trace()` base graphics functions.
-* Wrap `ggsave()` and post-process rendering so that text height matches
-  the target DPI exactly.
+* Wrap `ggsave()` for ggplot objects and provide device-level wrappers for
+  code that draws to active bitmap devices.
 * Defer complex-script shaping to backends that already do it well
   (ragg, svglite). Do not reinvent HarfBuzz.
 
@@ -62,7 +103,8 @@ R -e 'install.packages(c("ragg", "svglite", "rsvg", "systemfonts", "textshaping"
 
 ## Status
 
-0.1.0 — Linux only, vector (cairo_pdf / svglite) + bitmap (cairo_png, ragg).
+0.1.0 — Linux only, vector (cairo_pdf / svglite) + bitmap
+(cairo_png/jpeg/tiff, ragg).
 Windows and macOS will fall back to default devices with a warning.
 
 ## License

@@ -12,6 +12,6 @@ test_that("detect_scripts is empty for empty input", {
 })
 
 test_that("emoji are detected", {
-  scripts <- fontalign:::detect_scripts("Hi \u{1F600}")
+  scripts <- fontalign:::detect_scripts(paste0("Hi ", intToUtf8(0x1F600)))
   expect_true("emoji" %in% scripts)
 })

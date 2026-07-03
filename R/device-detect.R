@@ -43,21 +43,8 @@ device_native_dpi <- function() {
   # Vector devices use points (1 pt = 1/72 inch).
   if (isTRUE(device_is_vector())) return(72)
 
-  # Bitmap device: try to read `res` from the active device SEXP via
-  # the grDevices internal. If unavailable, ask the user.
-  res <- tryCatch({
-    dev_num <- grDevices::dev.cur()
-    devs <- grDevices::dev.list()
-    info <- grDevices::dev.info(dev_num)
-    if (!is.null(info$res) && info$res > 0) info$res else NA_real_
-  }, error = function(e) NA_real_)
-
-  if (is.na(res)) {
-    # ragg devices expose dpi differently.
-    attr_dev <- tryCatch(get("dev", envir = asNamespace("grDevices")),
-                         error = function(e) NULL)
-    res
-  } else res
+  # Base R does not expose bitmap device DPI through a stable public API.
+  NA_real_
 }
 
 #' Heuristic DPI resolution for a target device name and dpi argument
